@@ -53,6 +53,58 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+
+static int cmd_si(char *args) {
+	char *arg = strtok(NULL, " ");
+	int N;
+	if(arg != NULL) {
+		N = atoi(arg);
+		if(N < -1){
+			printf("Parameter error.The parameter range \
+is greater than -1\n");
+		}else{
+			cpu_exec(N);
+		}
+	}else{
+		cpu_exec(1);
+	}
+	return 0;
+}
+
+static int cmd_info(char *args) {
+	char *arg = strtok(NULL, " ");
+
+	if((strcmp(arg, "r")) == 0) {
+		isa_reg_display();
+	}/*else if((strcmp(arg, "w")) == 0) {
+		
+	}*/
+	return 0;
+}
+
+static int cmd_x(char *args) {
+	char *arg1 = strtok(NULL, " ");
+	char *arg2 = strtok(NULL, " ");
+	int N;
+	int addr;
+	word_t ret;
+
+	sscanf(arg1, "%x", &N );
+	sscanf(arg2, "%x", &addr);
+	printf("0x%x:\n", addr);
+
+	for(int i = 1; i <= N; i++) {
+		ret = vaddr_read(addr, 4);
+		printf("%-12lx", ret);
+		if(i % 5 == 0){
+			printf("\n");
+		}
+		addr += 4;
+	}
+	printf("\n");
+	return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -63,7 +115,10 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+	{"si", "The program execute N instructions in a single step and then suspend execution,\
+When N is not given, it defaults to 1", cmd_si},
+	{"info", "Print register or watchpoint", cmd_info},
+	{"x", "Scan memory", cmd_x},
   /* TODO: Add more commands */
 
 };
