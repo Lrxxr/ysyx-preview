@@ -105,6 +105,12 @@ static int cmd_x(char *args) {
 	return 0;
 }
 
+static int cmd_p(char *args) {
+	bool *success = false;
+	expr(args, success);	
+	return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -115,10 +121,11 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-	{"si", "The program execute N instructions in a single step and then suspend execution,\
-When N is not given, it defaults to 1", cmd_si},
-	{"info", "Print register or watchpoint", cmd_info},
-	{"x", "Scan memory", cmd_x},
+	{ "si", "The program execute N instructions in a single step and then suspend execution,\
+When N is not given, it defaults to 1", cmd_si },
+	{ "info", "Print register or watchpoint", cmd_info },
+	{ "x", "Scan memory", cmd_x },
+	{ "p", "Evaluate expression", cmd_p },
   /* TODO: Add more commands */
 
 };
