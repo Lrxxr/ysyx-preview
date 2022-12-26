@@ -19,6 +19,8 @@
 
 typedef struct watchpoint {
   int NO;
+	char expr[32];
+	uint64_t value1;
   struct watchpoint *next;
 
   /* TODO: Add more members if necessary */
@@ -28,6 +30,47 @@ typedef struct watchpoint {
 static WP wp_pool[NR_WP] = {};
 static WP *head = NULL, *free_ = NULL;
 
+WP* new_wp(char *args){
+	assert(free_ != NULL);
+
+	WP *temp = free_;
+	bool success = false;
+	temp->next = NULL;
+	strncpy(temp->expr, args);
+	temp->value1 = expr(args, &success);
+	free_ = free_->next;
+
+	if(head == NULL){
+		head = temp;
+	}else{
+		WP * p = head;
+		while(p->next != NULL ){
+			p = p->next;
+		}
+		p->next = temp;
+	}
+	return temp;
+}
+
+void free_wp(WP *wp){
+	if(wp == NULL){
+		printf("Invaild Node\n");
+	}else if(wp == head){
+		wp->next = free_->next;
+		free_->next = wp;
+	}else{
+		WP *p = head;
+		WP *posnode;
+		while(p->next != wp){
+			posnode = p;
+			p = p->next;
+		}
+		posnode->next = p->next;
+		wp->next = free_->next;
+		free_->next = wp;
+	}
+	return 0;
+}
 void init_wp_pool() {
   int i;
   for (i = 0; i < NR_WP; i ++) {

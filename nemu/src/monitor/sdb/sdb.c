@@ -86,12 +86,13 @@ static int cmd_x(char *args) {
 	char *arg1 = strtok(NULL, " ");
 	char *arg2 = strtok(NULL, " ");
 	int N;
-	int addr;
+	bool success = true;
 	word_t ret;
-
+	
+	vaddr_t addr = expr(arg2, &success);
 	sscanf(arg1, "%x", &N );
-	sscanf(arg2, "%x", &addr);
-	printf("0x%x:\n", addr);
+	//sscanf(arg2, "%lx", &addr);
+	printf("0x%lx:\n", addr);
 
 	for(int i = 1; i <= N; i++) {
 		ret = vaddr_read(addr, 4);
@@ -106,8 +107,8 @@ static int cmd_x(char *args) {
 }
 
 static int cmd_p(char *args) {
-	bool *success = false;
-	expr(args, success);	
+	bool success = true;
+	expr(args, &success);	
 	return 0;
 }
 
