@@ -19,7 +19,7 @@
 
 typedef struct watchpoint {
   int NO;
-	char expr[32];
+	char exp[32];
 	uint64_t value1;
   struct watchpoint *next;
 
@@ -30,14 +30,14 @@ typedef struct watchpoint {
 static WP wp_pool[NR_WP] = {};
 static WP *head = NULL, *free_ = NULL;
 
-WP* new_wp(char *args){
+WP* new_wp(char *arg){
 	assert(free_ != NULL);
 
 	WP *temp = free_;
 	bool success = false;
 	temp->next = NULL;
-	strncpy(temp->expr, args);
-	temp->value1 = expr(args, &success);
+	strncpy(temp->exp, arg);
+	temp->value1 = expr(arg, &success);
 	free_ = free_->next;
 
 	if(head == NULL){

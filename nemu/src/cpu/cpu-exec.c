@@ -37,10 +37,10 @@ static bool change(){
 	uint64_t value2;
 	while(head->next != NULL){
 		value2 = expr(head->expr, &success);
-		if(head->value1 == valu2){
+		if(head->value1 == value2){
 			return false;
 		}else{
-			printf("Old value = %lu\n", value1);
+			printf("Old value = %lu\n", head->value1);
 			printf("New value = %lu\n", value2);
 			return true;
 		}
@@ -57,7 +57,6 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 	if(change()){
 		nemu_state.state == NEMU_STOP;
 		printf("watchpoint %d:%s\n", head->NO, head->expr);
-		return sdb_mainloop();
 	}
 }
 

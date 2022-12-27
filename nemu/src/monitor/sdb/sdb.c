@@ -76,9 +76,31 @@ static int cmd_info(char *args) {
 
 	if((strcmp(arg, "r")) == 0) {
 		isa_reg_display();
-	}/*else if((strcmp(arg, "w")) == 0) {
-		
-	}*/
+	}else if((strcmp(arg, "w")) == 0) {
+		while(head->next != NUll){
+			printf("wacthpoint %d:%s\n", head->NO, head->expr);
+			head = head->next;
+		}	
+	}
+	return 0;
+}
+
+static int cmd_w(char *args){
+	char *arg = strtok(NULL, " ");
+	WP *p =new_wp(arg);
+	printf("wathpoint %d:%sset successfully\n", p->NO, p->exp);
+	return 0;
+}
+
+static int cmd_d(char *args){
+	char *arg = strtok(NULL, " ");
+	int NO;
+	sscanf(arg,"%d", &NO);
+	WP *p = head;
+	while(head->NO != NO){
+		head = head->next;
+	}
+	free_wp(head);
 	return 0;
 }
 
@@ -127,6 +149,8 @@ When N is not given, it defaults to 1", cmd_si },
 	{ "info", "Print register or watchpoint", cmd_info },
 	{ "x", "Scan memory", cmd_x },
 	{ "p", "Evaluate expression", cmd_p },
+	{ "w", "Set watchpoint", cmd_w},
+	{ "d", "delete watchpoint", cmd_d}
   /* TODO: Add more commands */
 
 };
