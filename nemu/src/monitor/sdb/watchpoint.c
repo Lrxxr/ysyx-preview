@@ -17,59 +17,117 @@
 
 #define NR_WP 32
 
-typedef struct watchpoint {
+/*typedef struct watchpoint {
   int NO;
 	char exp[32];
 	uint64_t value1;
   struct watchpoint *next;
 
-  /* TODO: Add more members if necessary */
+ //  TODO: Add more members if necessary 
 
-} WP;
+} WP;*/
 
 static WP wp_pool[NR_WP] = {};
 static WP *head = NULL, *free_ = NULL;
+
+bool wp_change(){
+	bool success = false;
+	uint64_t value2;
+	WP *p = head;
+	while(p != NULL){
+		value2 = expr(p->exp, &success);
+		if(p->value1 != value2){
+			printf("Old value = %lu\n", p->value1);
+			printf("New value = %lu\n", value2);
+			printf("watchpoint %d:%s\n", p->NO, p->exp);
+			p->value1 = value2;
+			return true;
+		}
+		p = p->next;
+	}
+	return false;
+}
+
+/*遍历*/
+WP* travel(WP *list){
+	WP *p = list;
+	while(p->next){
+		p = p->next;
+	}
+	return p;
+}
+
+void insert_free(WP *free_, WP *wp){
+	if(free_ != NULL){
+		WP *p = travel(free_);
+		p->next = wp;
+    wp->next = NULL;
+	}else{
+		wp->next = NULL;
+		free_ = wp;
+	}
+}
 
 WP* new_wp(char *arg){
 	assert(free_ != NULL);
 
 	WP *temp = free_;
 	bool success = false;
-	temp->next = NULL;
-	strncpy(temp->exp, arg);
+	strcpy(temp->exp, arg);
 	temp->value1 = expr(arg, &success);
 	free_ = free_->next;
+	temp->next = NULL;
 
 	if(head == NULL){
 		head = temp;
 	}else{
-		WP * p = head;
-		while(p->next != NULL ){
-			p = p->next;
-		}
+		WP *p = travel(head);
 		p->next = temp;
 	}
+	/*WP *p = head;
+	while(p != NULL){
+		printf("new_head_addr=%p\n", p);
+		p = p->next; 
+	}*/
 	return temp;
 }
 
-void free_wp(WP *wp){
-	if(wp == NULL){
+void free_wp(int n){
+	 WP *wp = head;
+	 while(wp->NO != n){
+		 wp = wp->next;
+	 }
+	if(head == NULL){
 		printf("Invaild Node\n");
+		return ;
 	}else if(wp == head){
-		wp->next = free_->next;
-		free_->next = wp;
+		WP *buffer = head->next;
+		insert_free(free_, wp);
+		head = buffer;
 	}else{
-		WP *p = head;
-		WP *posnode;
-		while(p->next != wp){
-			posnode = p;
-			p = p->next;
+	  WP *buffer = head;
+		WP *posnode = NULL;
+		while(buffer != wp){
+			posnode = buffer;
+			buffer = buffer->next;
 		}
-		posnode->next = p->next;
-		wp->next = free_->next;
-		free_->next = wp;
+		posnode->next = buffer->next;
+		insert_free(free_, wp);
 	}
-	return 0;
+	/*WP *point = head;
+	while(point != NULL){
+		printf("free_head_addr=%p\n", point);
+		point = point->next;
+	}*/
+	printf("delete watchpoint %d\n", n);
+}
+
+void watchpoint_display(){
+	WP *point = head;
+	while(point != NULL){
+		printf("wacthpoint %d: %s\n", point->NO, point->exp);
+		point = point->next;
+	}
 }
 void init_wp_pool() {
   int i;

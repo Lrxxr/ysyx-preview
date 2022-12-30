@@ -17,6 +17,7 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
+#include "../monitor/sdb/sdb.h"
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -32,31 +33,15 @@ static bool g_print_step = false;
 
 void device_update();
 
-static bool change(){
-	bool *success = false;
-	uint64_t value2;
-	while(head->next != NULL){
-		value2 = expr(head->expr, &success);
-		if(head->value1 == value2){
-			return false;
-		}else{
-			printf("Old value = %lu\n", head->value1);
-			printf("New value = %lu\n", value2);
-			return true;
-		}
-		head = head->next;
-	}
-}
-
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
-	if(change()){
-		nemu_state.state == NEMU_STOP;
-		printf("watchpoint %d:%s\n", head->NO, head->expr);
+
+	if(wp_change()){
+		nemu_state.state = NEMU_STOP;
 	}
 }
 

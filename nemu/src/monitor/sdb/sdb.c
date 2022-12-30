@@ -77,18 +77,14 @@ static int cmd_info(char *args) {
 	if((strcmp(arg, "r")) == 0) {
 		isa_reg_display();
 	}else if((strcmp(arg, "w")) == 0) {
-		while(head->next != NUll){
-			printf("wacthpoint %d:%s\n", head->NO, head->expr);
-			head = head->next;
-		}	
+		watchpoint_display();	
 	}
 	return 0;
 }
 
 static int cmd_w(char *args){
-	char *arg = strtok(NULL, " ");
-	WP *p =new_wp(arg);
-	printf("wathpoint %d:%sset successfully\n", p->NO, p->exp);
+	WP *p =new_wp(args);
+	printf("wathpoint %d: %s\n", p->NO, p->exp);
 	return 0;
 }
 
@@ -96,11 +92,7 @@ static int cmd_d(char *args){
 	char *arg = strtok(NULL, " ");
 	int NO;
 	sscanf(arg,"%d", &NO);
-	WP *p = head;
-	while(head->NO != NO){
-		head = head->next;
-	}
-	free_wp(head);
+	free_wp(NO);
 	return 0;
 }
 
@@ -113,7 +105,6 @@ static int cmd_x(char *args) {
 	
 	vaddr_t addr = expr(arg2, &success);
 	sscanf(arg1, "%x", &N );
-	//sscanf(arg2, "%lx", &addr);
 	printf("0x%lx:\n", addr);
 
 	for(int i = 1; i <= N; i++) {

@@ -19,6 +19,7 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
+#include <memory/vaddr.h>
 
 enum {
   TK_NOTYPE = 256, TK_EQ = 255, TK_PLUS = 254, TK_SUB = 253, TK_MUL = 252, TK_DIV = 251, TK_LEF = 250, TK_RIG = 249, TK_NUM = 248,
@@ -180,6 +181,8 @@ static int dominant_operator(int p, int q) {
 			case TK_NOTYPE:
 			case TK_NUM: 
 			case TK_MIN:
+			case TK_REG:
+			case TK_POINT:
 				continue;
 			case TK_LEF:
 				int n1 = 1;
@@ -226,39 +229,45 @@ static bool check_parentheses(int p, int q) {
 }
 
 
-static uint64_t eval(int p, int q) {
+static uint32_t eval(int p, int q) {
 	if(p > q) {
 		return printf("Bad expression\n");
 	}else if(p == q){
-		uint64_t num = 0;
+		uint32_t num = 0;
 		switch(tokens[p].type){
 			case TK_NUM:
-				sscanf(tokens[p].str, "%lu", &num);
+				sscanf(tokens[p].str, "%u", &num);
+				break;
 			case TK_HEX:
-				sscanf(tokens[p].str, "%lx", &num );
+				sscanf(tokens[p].str, "%x", &num );
 				break;
 			case TK_REG:
 				bool success = true;
 				num = isa_reg_str2val(tokens[p].str, &success);
 				break;
+			default: 
+				assert(0);
 		}
 		return num;
 	}else if(check_parentheses(p, q) == true){
 		return eval(p + 1, q -1);
-	}else if(p + 1 == q){
-		uint64_t num = 0;
-		if(tokens[p].type == TK_MIN && tokens[q].type == TK_NUM){
-			sscanf(tokens[q].str, "%lu", &num);
-		}else if(tokens[p].type == TK_POINT && tokens[q].type == TK_HEX){
-			sscanf(tokens[q].str, "%lx", &num);
+	}else if(p + 1 == q || check_parentheses(p + 1, q) == true){
+		switch(tokens[p].type){
+			case TK_MIN:
+				return -eval(p + 1, q);
+			case TK_POINT:
+				vaddr_t addr = eval(p + 1, q);
+				return vaddr_read(addr, 4);
+				break;
+			default:
+				assert(0);
 		}
-		return -num;
 	}else{
 		int op = dominant_operator(p, q); 
-		uint64_t val1 = eval(p, op - 1);
-		uint64_t val2 = eval(op + 1, q);
+		uint32_t val1 = eval(p, op - 1);
+		uint32_t val2 = eval(op + 1, q);
  
-		switch (tokens[op].type) {                                                                                                              
+		switch (tokens[op].type) {
 			case TK_PLUS: return val1 + val2;
 			case TK_SUB: return val1 - val2;
 			case TK_MUL: return val1 * val2;
